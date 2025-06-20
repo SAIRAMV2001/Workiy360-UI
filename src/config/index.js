@@ -1,20 +1,13 @@
-// Centralized config loader based on NODE_ENV
-let config;
+// Centralized config loader based on Vite env
+const env = import.meta.env.VITE_APP_ENV || 'development';
 
-switch (import.meta.env.VITE_APP_ENV || process.env.NODE_ENV) {
-  case 'production':
-    config = await import('./production.js');
-    break;
-  case 'staging':
-    config = await import('./staging.js');
-    break;
-  case 'development':
-    config = await import('./development.js');
-    break;
-  case 'local':
-  default:
-    config = await import('./local.js');
-    break;
-}
+const configMap = {
+  production: () => import('./production.js'),
+  staging: () => import('./staging.js'),
+  development: () => import('./development.js'),
+  local: () => import('./local.js'),
+};
 
-export default config.default;
+const configPromise = (configMap[env] || configMap['development'])();
+const configModule = await configPromise;
+export default configModule.default;
